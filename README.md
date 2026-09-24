@@ -1,79 +1,35 @@
-# 🛡️ Active Directory & BadBlood Cyber Security Lab Environment
-
-Bu proje, siber güvenlik araştırmaları, sızma testleri (pentest), BloodHound analizi ve MAVİ Takım (Blue Team) tespit senaryolarını gerçekleştirmek amacıyla otomatikleştirilmiş bir **Active Directory Lab Ortamı** kurulumunu kapsar.
-
----
-
-## 📐 Mimari ve Senaryo Özeti
-
-### 🎯 Senaryo: "lab.local" Kurumsal Ağ Simülasyonu
-Senaryo gereği, **`lab.local`** adında yeni bir kurumsal domain yapısı oluşturulmuştur. Gerçekçi bir kurumsal ağ yapısını simüle etmek için Active Directory yapısı boş bırakılmamış, **BadBlood** aracı kullanılarak binlerce rastgele kullanıcı, grup, bilgisayar, Access Control List (ACL) ve güvensiz yetkilendirme (Organizational Unit / Delegation) verisi ile doldurulmuştur.
-
-```
-[ Domain Controller (lab.local) ] 
-       │
-       ├──> Windows Server 2019 (AD DS & DNS Server)
-       ├──> Kerberos / NTLM Kimlik Doğrulama
-       └──> BadBlood Mock Data (500+ Kullanıcı, OU, Nesne ve Zayıf Yetkiler)
-```
-
----
-
-## 🛠️ Adım Adım Yapılan İşlemler
-
-### Adım 1: Active Directory Domain Services (AD DS) Kurulumu
-Görseldeki PowerShell çıktısında görüldüğü üzere, otomatikleştirilmiş betik yardımıyla `lab.local` domain forest'ı oluşturulmuştur.
-
-* **Komut:** `Install-ADDSForest -DomainName "lab.local" ...`
-* **Yapılan İşlemler:**
-  1. Ortam ve girdi doğrulaması tamamlandı.
-  2. Kerberos ilkeleri güvenliği sağlandı.
-  3. `lab.local` domain controller rolüne yükseltildi (Promoting forest).
-  4. DNS zone kayıtları ve Active Directory varsayılan veritabanı (NTDS.dit) yapılandırıldı.
-
----
-
-### Adım 2: BadBlood ile Domain’i Domain Verileriyle Doldurma
-AD DS kurulumu tamamlandıktan sonra, test senaryolarını gerçekçi kılmak amacıyla ortama **BadBlood** aracı entegre edilmiştir.
-
-> **BadBlood Nedir?**
-> Active Directory ortamlarında BloodHound gibi araçlarla analiz yapılabilecek karmaşık, zayıf konfigürasyonlara ve ilişkilere sahip binlerce rastgele nesne (User, Group, Computer, OU, ACL) oluşturan bir simülasyon aracıdır.
-
-**BadBlood Tarafından Oluşturulan Nesneler:**
-* **Organizational Units (OU):** Rastgele yetki hiyerarşisine sahip OU mimarisi.
-* **Kullanıcılar & Gruplar:** Yüzlerce rastgele kullanıcı hesabı ve içi içe geçmiş (nested) gruplar.
-* **Görünmeyen Zayıflıklar:** Rastgele dağıtılmış `GenericAll`, `WriteDACL`, `ForceChangePassword` gibi suiistimale açık ACL (Access Control List) izinleri.
-
----
-
-## 🚀 Örnek Test ve Saldırı Senaryoları (Laboratuvarda Yapılabilecekler)
-
-Bu lab ortamı tamamlandığında aşağıdaki testler gerçekleştirilebilir:
-
-### 1. Kırmızı Takım (Red Team) Senaryoları
-* **Reconnaissance & BloodHound:** `SharpHound` ile domain verilerini toplayıp Domain Admin'e giden en kısa yetki yükseltme (Privilege Escalation) yollarını bulma.
-* **Kerberoasting & AS-REP Roasting:** Ortama eklenen güvensiz kullanıcı hesapları üzerinden bilet yakalama ve parola kırma saldırıları.
-* **ACL Exploitation:** BadBlood tarafından rastgele atanan zayıf ACL yetkilerini kullanarak yetki yükseltme.
-
-### 2. Mavi Takım (Blue Team) Senaryoları
-* **SIEM / Sysmon Log Analizi:** Ortamda gerçekleşen şüpheli Kerberos bilet isteklerini ve yetki değişimlerini izleme.
-* **AD Hardening:** BloodHound çıktısına göre tespit edilen kritik yetki yollarını ve zayıf ACL yapılandırmalarını temizleme.
-
----
-
-## ⚠️ Dikkat Edilmesi Gereken Hususlar & Uyarılardan Dersler
-
-Kurulum sırasında PowerShell üzerinde alınan uyarılar ve anlamları:
-
-1. **Statik IP Uyarısı:**
-   * *Açıklama:* Domain Controller için statik IP atanması önerilir. Dinamik IP değişirse DNS ve kimlik doğrulama hizmetleri aksayabilir.
-2. **DNS Delegation Uyarısı:**
-   * *Açıklama:* Üst seviye bir DNS sunucusu bulunmadığı için yetkilendirme (delegation) oluşturulamadı. Isolated lab ortamları için bu durum normaldir.
-3. **Allow cryptography algorithms compatible with Windows NT 4.0:**
-   * *Açıklama:* Windows Server 2019 varsayılan zayıf kripto uyumluluk uyarısıdır. Gerekirse GPO ile sıkılaştırılabilir.
-
----
-
-## 📝 Sonuç
-
-Kurulum başarıyla tamamlanmış ve `lab.local` Active Directory yapısı hem kırmızı hem mavi takım çalışmaları için hazır hale getirilmiştir.
+🛡️ Enterprise Active Directory & BadBlood Cyber Range DeploymentWelcome to the Enterprise Active Directory & BadBlood Cyber Range documentation. This repository provides complete architectural documentation, step-by-step installation guides, attack scenario execution playbooks, and mitigation procedures for a fully populated, vulnerable Active Directory testing environment.🎯 Executive Summary & Scenario OverviewModern enterprise networks rely heavily on Active Directory Domain Services (AD DS) for centralized identity and access management. However, misconfigurations, legacy settings, and complex delegation chains frequently create critical security vulnerabilities that attackers exploit to gain full domain compromise (Domain Admin / Enterprise Admin).To simulate a realistic enterprise environment, this lab provisions a fresh Active Directory forest (lab.local) hosted on Windows Server 2019 Datacenter. Following base domain creation, the environment is injected with dynamic mock enterprise data using BadBlood. This populates the domain with thousands of randomized objects, nested organizational units (OUs), cross-linked security groups, and intentional Access Control List (ACL) misconfigurations.🏢 Target Architecture                                  [ LAB.LOCAL FOREST ROOT ]
+                                             │
+                             ┌───────────────┴───────────────┐
+                             │                               │
+                [ Primary Domain Controller ]      [ Security Lab Workstations ]
+                   • Hostname: DC01                   • Windows 10/11 Enterprise
+                   • OS: Windows Server 2019          • BloodHound / SharpHound
+                   • IP: Static IPv4 / IPv6           • Kali Linux / Impacket
+                   • Roles: AD DS, DNS, Kerberos
+                             │
+                             ▼
+                [ BadBlood Population Engine ]
+                   • 500+ User Accounts
+                   • Nested Security Groups
+                   • Complex OU Hierarchy
+                   • Vulnerable ACLs / ACEs
+🛠️ Detailed Step-by-Step Deployment LogStep 1: Active Directory Domain Services (AD DS) ProvisioningThe forest deployment was executed via automated PowerShell scripts invoking the Install-ADDSForest cmdlet to create the root domain lab.local.Executed Command Sequence:Import-Module ADDSDeployment
+Install-ADDSForest `
+    -CreateDnsDelegation:$false `
+    -DatabasePath "C:\Windows\NTDS" `
+    -DomainMode "WinThreshold" `
+    -DomainName "lab.local" `
+    -DomainNetbiosName "LAB" `
+    -ForestMode "WinThreshold" `
+    -InstallDns:$true `
+    -LogPath "C:\Windows\NTDS" `
+    -NoRebootOnCompletion:$false `
+    -SysvolPath "C:\Windows\SYSVOL" `
+    -Force:$true
+Execution Milestones & Diagnostics:Environment Validation: Verified prerequisites, path availability, and schema compatibility.Kerberos Security Policy Setup: Initialized default Kerberos ticket policy (TGT lifetime, clock skew allowance).Forest Promotion: Promoted the server instance to Domain Controller for lab.local.Directory Database Initialization: Instantiated NTDS.dit database and SYSVOL share structures.Step 2: BadBlood Injection & AD Graph Escalation PathsA completely clean Active Directory environment does not reflect real-world attack vectors. Real environments suffer from "permission bloat" and accidental delegation over time. BadBlood automates this complexity by injecting realistic non-linear relationships.BadBlood Operations Executed:OU Hierarchy Generation: Creates deep, nested Organizational Units resembling enterprise divisions (e.g., HR, Engineering, IT Ops, Executive).User & Computer Object Creation: Generates hundreds of randomized user accounts and computer objects across OUs.Nested Security Group Expansion: Configures complex group memberships (Group A inside Group B inside Group C) to hide transitive privileges.ACL/ACE Misconfigurations: Grants dangerous Access Control Entries (ACEs) to non-admin users, including:GenericAll / GenericWrite permissions over privileged objects.WriteDacl permissions allowing attackers to modify object permissions.ForceChangePassword rights over high-privilege users.UserAccountControl flags set to DONT_REQUIRE_PREAUTH (AS-REP Roasting vector).🚀 Cyber Security Test Cases & Red/Blue Team PlaybooksThis lab environment is engineered to support both offensive attack path analysis and defensive detection engineering.🔴 Red Team Operations (Attack Paths)1. AD Reconnaissance with BloodHound / SharpHoundObjective: Collect domain graph relationships and identify privilege escalation paths to Domain Admins.Execution:Invoke-BloodHound -CollectionMethod All -Domain lab.local -ZipFileName ad_harvest.zip
+Analysis: Import collected JSON data into BloodHound GUI to execute Cypher queries like Shortest Paths to Unconstrained Delegation or Shortest Paths to Domain Admins.2. Kerberoasting AttacksObjective: Request TGS tickets for accounts with Service Principal Names (SPNs) and crack the ticket hashes offline.Execution:GetUserSPNs.py lab.local/user:password -dc-ip <DC_IP> -request
+hashcat -m 13100 hashes.txt rockyou.txt
+3. AS-REP RoastingObjective: Extract Kerberos AS-REP hashes for accounts configured without Kerberos pre-authentication.Execution:GetNPUsers.py lab.local/ -no-pass -usersfile users.txt -dc-ip <DC_IP>
+4. Abusing Weak ACLs / ACEsObjective: Leverage GenericWrite or WriteDacl permissions identified by BadBlood to overwrite target passwords or grant explicit rights.Execution:Set-ADAccountPassword -Identity "TargetUser" -NewPassword (ConvertTo-SecureString "P@ssword123!" -AsPlainText -Force)
+🔵 Blue Team Operations (Detection & Hardening)1. Detection Engineering (Event Logs & SIEM)Monitor the Domain Controller event log for key security event IDs (EIDs):EID 4624 / 4625: Successful / Failed logon events.EID 4768: Kerberos Authentication Ticket (TGT) requested (AS-REP Roasting monitoring).EID 4769: Kerberos Service Ticket (TGS) requested (Kerberoasting monitoring).EID 4738: User Account object modified (detecting unauthorized permission changes).2. Active Directory Hardening StrategyRemediate Over-Privileged ACLs: Audit and remove unnecessary explicit ACEs granted to non-administrative users.Enable AES Encryption: Disable legacy RC4 encryption for Kerberos to harden ticket request mechanisms.Implement Tiered Administration (Tier 0 / 1 / 2): Enforce strict administrative boundaries to prevent credential harvesting across tiers.⚠️ Installation Diagnostics & Warning AnalysisDuring the Install-ADDSForest execution, several warnings were recorded. Below is a technical breakdown of each diagnostic warning and its resolution in a production vs. lab context:Warning DiagnosticTechnical DescriptionLab Impact & MitigationStatic IP Address WarningThe system detected a network adapter using DHCP or an unassigned static binding.Lab Impact: Low.Mitigation: In production, Domain Controllers must have static IPv4/IPv6 addresses to prevent DNS failure across client nodes.DNS Delegation WarningAn authoritative parent DNS zone could not be located to create a delegation for lab.local.Lab Impact: None.Mitigation: Expected behavior in isolated or root lab environments without a parent domain structure.Windows NT 4.0 CryptographyDefault settings allow legacy NT 4.0-compatible cryptography algorithms.Lab Impact: Low.Mitigation: In production, disable legacy algorithms via Group Policy Object (GPO): Network security: Allow cryptography algorithms compatible with Windows NT 4.0 -> Disabled.📦 Environment SpecificationsDomain Name: lab.localNetBIOS Name: LABForest Functional Level: Windows Server 2016 / 2019 (WinThreshold)Domain Functional Level: Windows Server 2016 / 2019 (WinThreshold)Primary Roles Installed: AD DS, DNS Server, Global Catalog (GC)Data Generator: BadBlood v2.0+🏁 ConclusionThe lab.local environment is successfully promoted and augmented with complex graph structures via BadBlood. This setup provides an ideal playground for mastering Active Directory security, investigating Kerberos mechanics, testing offensive tooling, and authoring custom detection rules.
