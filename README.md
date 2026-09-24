@@ -2,6 +2,8 @@
 
 Welcome to the **Enterprise Active Directory & BadBlood Cyber Range** documentation. This repository provides complete architectural documentation, step-by-step installation guides, attack scenario execution playbooks, and mitigation procedures for a fully populated, vulnerable Active Directory testing environment.
 
+![Bad Blood](badblood.png)
+
 ---
 
 ## 🎯 Executive Summary & Scenario Overview
